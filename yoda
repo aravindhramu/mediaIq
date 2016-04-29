@@ -1,0 +1,99 @@
+#!/usr/bin/env python
+import sys
+from compute import *
+import os
+
+def parse_price_list(filename):
+    if not os.path.exists(filename):
+        print filename+" doesnt exist"
+        os._exit(1)
+    fd = open(filename,'r')
+    lines = fd.readlines()
+    fd.close()
+    price_list = []
+    for l in lines:
+        vals = l.strip().split(",")
+        if len(vals) == 0:
+            print "incompatible file format"
+            os._exit(0)
+        bookid = vals[0]
+        d = {}
+        if bookid not in price_list:
+            d["bookid"] = bookid
+        price = vals[1]
+        name = vals[2]
+        d["price"] = price
+        d["name"] = name
+        price_list.append(d)
+    return price_list
+
+def parse_transaction_list(filename):
+    if not os.path.exists(filename):
+        print filename+" doesnt exist"
+        os._exit(1)
+    fd = open(filename,'r')
+    lines = fd.readlines()
+    fd.close()
+    transaction_list = []
+    for l in lines:
+        vals = l.strip().split(",")
+        if len(vals) == 0:
+            print "incompatible file format"
+            os._exit(0)
+        cid = vals[0]
+        d = {}
+        d["cid"] = cid
+        d["bid"] = []
+        for bid in vals[1:]:
+            d["bid"].append(bid)
+        transaction_list.append(d)
+    return transaction_list
+
+def validate():
+    args = {}
+    try:
+        if "t" in sys.argv:
+            t_ind = sys.argv.index("t")
+            if t_ind + 1 > len(sys.argv):
+                print "transaction list path not present"
+                sys.exit(-1)
+            transaction_list = sys.argv[t_ind+1]
+            args["transaction"] = transaction_list
+        if "p" in sys.argv:
+            p_ind = sys.argv.index("p")
+            if p_ind + 1 > len(sys.argv):
+                print "price list path not present"
+                sys.exit(-1)
+            price_list = sys.argv[p_ind+1]
+            args["price"] = price_list
+        if "r" in sys.argv:
+            r_ind = sys.argv.index("r")
+            if r_ind + 1 > len(sys.argv):
+                print " N value mandatory"
+                sys.exit(-1)
+            args["n_value"] = sys.argv[r_ind+1]
+        if "d" in sys.argv:
+            d_ind = sys.argv.index("d")
+            if d_ind + 1 < len(sys.argv):
+                d_val = sys.argv[d_ind+1]
+                args["d_value"] = d_val
+            if "c" not in sys.argv:
+                print "customer id required"
+                sys.exit(-1)
+            c_val = sys.argv[sys.argv.index("c")+1]
+            args["c_value"] = c_val
+    except:
+        print "input error.Please retry with proper format"
+        sys.exit(-1)
+    return args
+
+
+if __name__ == "__main__":
+    args = validate()
+    price_list = parse_price_list(args["price"])
+    transaction_list = parse_transaction_list(args["transaction"])
+    perform_compute(args,price_list,transaction_list)
+
+
+
+
